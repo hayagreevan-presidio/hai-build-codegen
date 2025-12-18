@@ -1,22 +1,22 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
+	"name": "hai-build-codegen",
+	"displayName": "HAI Build Codegen",
 	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
 	"version": "3.43.0",
-	"icon": "assets/icons/icon.png",
+	"icon": "assets/icons/HAI-Rounded-Dark@3x.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "Presidio Inc."
 	},
 	"license": "Apache-2.0",
-	"publisher": "saoudrizwan",
+	"publisher": "PRESIDIO",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cline/cline"
+		"url": "https://github.com/presidio-oss/hai-build-codegen"
 	},
-	"homepage": "https://cline.bot",
+	"homepage": "https://github.com/presidio-oss/hai-build-codegent",
 	"categories": [
 		"AI",
 		"Chat",
@@ -26,7 +26,7 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
+		"hai",
 		"claude",
 		"dev",
 		"mcp",
@@ -46,33 +46,24 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
-		"icons": {
-			"cline-icon": {
-				"description": "cline",
-				"default": {
-					"fontPath": "assets/icons/cline-bot.woff",
-					"fontCharacter": "\\e900"
-				}
-			}
-		},
 		"walkthroughs": [
 			{
-				"id": "ClineWalkthrough",
-				"title": "Meet Cline, your new coding partner",
-				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
+				"id": "HAIWalkthrough",
+				"title": "Meet HAI, your new coding partner",
+				"description": "HAI codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
 				"steps": [
 					{
 						"id": "welcome",
 						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell Cline what you want to achieve. It plans, asks, and then codes, like a true partner.",
+						"description": "Tell HAI what you want to achieve. It plans, asks, and then codes, like a true partner.",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "Let Cline Learn Your Codebase",
-						"description": "Point Cline to your project. It builds understanding to make smart, context-aware changes.",
+						"title": "Let HAI Learn Your Codebase",
+						"description": "Point HAI to your project. It builds understanding to make smart, context-aware changes.",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
@@ -80,7 +71,7 @@
 					{
 						"id": "advanced-features",
 						"title": "Always Use the Best AI Models",
-						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"description": "HAI empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
@@ -96,7 +87,7 @@
 					{
 						"id": "getting-started",
 						"title": "You're Always in Control",
-						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
+						"description": "Review HAI's plans and diffs. Approve changes before they happen. No surprises.",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -107,22 +98,31 @@
 				]
 			}
 		],
+		"icons": {
+			"cline-icon": {
+				"description": "cline",
+				"default": {
+					"fontPath": "assets/icons/cline-bot.woff",
+					"fontCharacter": "\\e900"
+				}
+			}
+		},
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "claude-dev-ActivityBar",
-					"title": "Cline",
-					"icon": "assets/icons/icon.svg"
+					"id": "hai-build-codegen-ActivityBar",
+					"title": "HAI Build (Ctrl/⌘ +')",
+					"icon": "assets/icons/hai-logo-mini.png"
 				}
 			]
 		},
 		"views": {
-			"claude-dev-ActivityBar": [
+			"hai-build-codegen-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "claude-dev.SidebarProvider",
+					"id": "hai-build-codegen.SidebarProvider",
 					"name": "",
-					"icon": "assets/icons/icon.svg"
+					"icon": "assets/icons/hai-logo-mini.png"
 				}
 			]
 		},
@@ -143,11 +143,6 @@
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.accountButtonClicked",
-				"title": "Account",
-				"icon": "$(account)"
-			},
-			{
 				"command": "cline.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
@@ -166,12 +161,12 @@
 			},
 			{
 				"command": "cline.addToChat",
-				"title": "Add to Cline",
+				"title": "Add to HAI",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to Cline",
+				"title": "Add to HAI",
 				"category": "Cline"
 			},
 			{
@@ -181,7 +176,7 @@
 			},
 			{
 				"command": "cline.generateGitCommitMessage",
-				"title": "Generate Commit Message with Cline",
+				"title": "Generate Commit Message with HAI",
 				"category": "Cline",
 				"icon": "$(cline-icon)"
 			},
@@ -193,12 +188,12 @@
 			},
 			{
 				"command": "cline.explainCode",
-				"title": "Explain with Cline",
+				"title": "Explain with HAI",
 				"category": "Cline"
 			},
 			{
 				"command": "cline.improveCode",
-				"title": "Improve with Cline",
+				"title": "Improve with HAI",
 				"category": "Cline"
 			},
 			{
@@ -219,7 +214,7 @@
 			},
 			{
 				"command": "cline.reviewComment.addToChat",
-				"title": "Add to Cline Chat",
+				"title": "Add to HAI Chat",
 				"category": "Cline",
 				"icon": "$(link-external)"
 			}
@@ -256,27 +251,22 @@
 				{
 					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == hai-build-codegen.SidebarProvider"
 				},
 				{
 					"command": "cline.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == hai-build-codegen.SidebarProvider"
 				},
 				{
 					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == claude-dev.SidebarProvider"
-				},
-				{
-					"command": "cline.accountButtonClicked",
-					"group": "navigation@5",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == hai-build-codegen.SidebarProvider"
 				},
 				{
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == hai-build-codegen.SidebarProvider"
 				}
 			],
 			"editor/context": [
@@ -334,7 +324,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Cline",
+			"title": "HAI Build",
 			"properties": {}
 		}
 	},
