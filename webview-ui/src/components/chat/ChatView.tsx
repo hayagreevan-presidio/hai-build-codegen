@@ -450,7 +450,12 @@ const ChatView = ({
 					lastSuccessfullyExecutedTaskId &&
 					selectedHaiTask?.id === lastSuccessfullyExecutedTaskId &&
 					!enableButtons && (
-						<div style={{ padding: "12px 15px 0px" }}>
+						<div
+							style={{
+								padding: "12px 15px 12px",
+								backgroundColor: "var(--vscode-editor-background)",
+								borderTop: "1px solid var(--vscode-panel-border)",
+							}}>
 							<p style={{ margin: "0px 0px 6px" }}>Do you want to mark this task as completed?</p>
 							<div style={{ display: "flex" }}>
 								<VSCodeButton
