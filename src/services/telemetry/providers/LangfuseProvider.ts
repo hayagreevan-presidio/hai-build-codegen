@@ -25,12 +25,16 @@ export class LangfuseProvider implements ITelemetryProvider {
 			requestTimeout: 10000,
 			enabled: true,
 		})
-		// Create a root trace for non-task events
+		// Create a root trace for non-task events with a unique ID
+		// Using timestamp to ensure each provider instance has a unique trace
+		const rootTraceId = `root-${Date.now()}`
 		this.traceClient = this.langfuse.trace({
-			id: "root",
+			id: rootTraceId,
 			name: "hai-extension",
 			timestamp: new Date(),
 		})
+		this.enabled = true
+		console.info(`[LangfuseProvider] Initialized with trace ${rootTraceId}`)
 	}
 
 	public log(event: string, properties?: TelemetryProperties): void {
@@ -212,7 +216,14 @@ export class LangfuseProvider implements ITelemetryProvider {
 	}
 
 	public async dispose(): Promise<void> {
-		// Clean up Langfuse client
-		await this.langfuse.shutdownAsync()
+		try {
+			// Flush any pending events before shutting down
+			await this.langfuse.flushAsync()
+			// Clean up Langfuse client
+			await this.langfuse.shutdownAsync()
+			console.info("[LangfuseProvider] Disposed and flushed all events")
+		} catch (error) {
+			console.error("[LangfuseProvider] Error during dispose:", error)
+		}
 	}
 }

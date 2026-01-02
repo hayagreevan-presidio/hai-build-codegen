@@ -1,12 +1,15 @@
+import { PostHog } from "posthog-node"
 import { HaiConfig } from "@/shared/hai-config"
 import { getValidOpenTelemetryConfig } from "@/shared/services/config/otel-config"
-import { isPostHogConfigValid, posthogConfig } from "@/shared/services/config/posthog-config"
+// PostHog default config is commented out - only used if custom config provided in .hai.config
+// import { isPostHogConfigValid, posthogConfig } from "@/shared/services/config/posthog-config"
 import { Logger } from "../logging/Logger"
 import type { ITelemetryProvider, TelemetryProperties, TelemetrySettings } from "./providers/ITelemetryProvider"
 import { LangfuseProvider } from "./providers/LangfuseProvider"
 import { OpenTelemetryClientProvider } from "./providers/opentelemetry/OpenTelemetryClientProvider"
 import { OpenTelemetryTelemetryProvider } from "./providers/opentelemetry/OpenTelemetryTelemetryProvider"
-import { PostHogClientProvider } from "./providers/posthog/PostHogClientProvider"
+// PostHogClientProvider is commented out - we create custom clients from .hai.config
+// import { PostHogClientProvider } from "./providers/posthog/PostHogClientProvider"
 import { PostHogTelemetryProvider } from "./providers/posthog/PostHogTelemetryProvider"
 
 /**
@@ -69,10 +72,15 @@ export class TelemetryProviderFactory {
 				return new NoOpTelemetryProvider()
 			}
 			case "posthog": {
-				const sharedClient = PostHogClientProvider.getClient()
-				if (sharedClient) {
-					return await new PostHogTelemetryProvider(sharedClient).initialize()
+				// Create a custom PostHog client with config from .hai.config
+				if (config.apiKey && config.host) {
+					const customClient = new PostHog(config.apiKey, {
+						host: config.host,
+						enableExceptionAutocapture: false,
+					})
+					return await new PostHogTelemetryProvider(customClient).initialize()
 				}
+				Logger.info("TelemetryProviderFactory: PostHog credentials not available")
 				return new NoOpTelemetryProvider()
 			}
 			case "opentelemetry": {
@@ -94,28 +102,50 @@ export class TelemetryProviderFactory {
 
 	/**
 	 * Gets the default telemetry provider configuration
+	 * Priority order:
+	 * 1. Langfuse: Custom from .hai.config OR pipeline defaults (env vars)
+	 * 2. PostHog: Only from .hai.config (no pipeline defaults)
+	 * 3. OpenTelemetry: Optional, from env vars
 	 * @returns Default configuration using available providers
 	 */
 	public static async getDefaultConfigs(): Promise<TelemetryProviderConfig[]> {
 		const configs: TelemetryProviderConfig[] = []
 
-		// Add Langfuse provider first (primary)
-		const langfuseConfig = await HaiConfig.getLangfuseConfig()
-		if (langfuseConfig && langfuseConfig.apiKey && langfuseConfig.publicKey) {
+		// 1. Langfuse configuration
+		// First check for custom config from .hai.config
+		const customLangfuseConfig = await HaiConfig.getLangfuseConfig()
+		if (customLangfuseConfig?.apiKey && customLangfuseConfig?.publicKey) {
+			// Use custom Langfuse config from .hai.config
+			Logger.info("TelemetryProviderFactory: Using custom Langfuse config from .hai.config")
 			configs.push({
 				type: "langfuse",
-				apiKey: langfuseConfig.apiKey,
-				publicKey: langfuseConfig.publicKey,
-				apiUrl: langfuseConfig.apiUrl,
+				apiKey: customLangfuseConfig.apiKey,
+				publicKey: customLangfuseConfig.publicKey,
+				apiUrl: customLangfuseConfig.apiUrl,
+			})
+		} else if (process.env.LANGFUSE_API_KEY && process.env.LANGFUSE_PUBLIC_KEY) {
+			// Fall back to pipeline defaults (build-time env vars)
+			Logger.info("TelemetryProviderFactory: Using default Langfuse config from pipeline")
+			configs.push({
+				type: "langfuse",
+				apiKey: process.env.LANGFUSE_API_KEY,
+				publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+				apiUrl: process.env.LANGFUSE_API_URL,
 			})
 		}
 
-		// Add PostHog provider second (secondary)
-		if (isPostHogConfigValid(posthogConfig)) {
-			configs.push({ type: "posthog", ...posthogConfig })
+		// 2. PostHog configuration - ONLY from .hai.config (no pipeline defaults)
+		const customPostHogConfig = await HaiConfig.getPostHogConfig()
+		if (customPostHogConfig?.apiKey && customPostHogConfig?.url) {
+			Logger.info("TelemetryProviderFactory: Using custom PostHog config from .hai.config")
+			configs.push({
+				type: "posthog",
+				apiKey: customPostHogConfig.apiKey,
+				host: customPostHogConfig.url,
+			})
 		}
 
-		// Add OpenTelemetry provider last (optional)
+		// 3. OpenTelemetry provider (optional, from env vars)
 		const otelConfig = getValidOpenTelemetryConfig()
 		if (otelConfig) {
 			configs.push({ type: "opentelemetry", ...otelConfig })

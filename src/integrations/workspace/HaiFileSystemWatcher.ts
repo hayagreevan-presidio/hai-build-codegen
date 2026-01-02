@@ -117,11 +117,12 @@ class HaiFileSystemWatcher {
 		})
 	}
 
-	isHaiConfigPath(path: string) {
-		const pathSplit = path.split(this.sourceFolder)
-		const hairulesPath = pathSplit.length === 2 ? pathSplit[1].replace("/", "") : ""
-
-		return hairulesPath === GlobalFileNames.haiConfig
+	isHaiConfigPath(filePath: string) {
+		// Get the relative path from the workspace root
+		const relativePath = path.relative(this.sourceFolder, filePath)
+		// Check if this is exactly the .hai.config file at the root of the workspace
+		// It should match just ".hai.config" without any directory prefix
+		return relativePath === GlobalFileNames.haiConfig
 	}
 
 	async dispose() {
