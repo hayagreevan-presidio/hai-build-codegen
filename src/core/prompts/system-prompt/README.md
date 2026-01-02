@@ -298,7 +298,7 @@ class TemplateEngine {
 
 **Base Template Example:**
 ```markdown
-You are HAI, a highly skilled software engineer...
+You are HAI (Human AI), a highly skilled software engineer...
 
 ====
 
