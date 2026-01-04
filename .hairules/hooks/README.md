@@ -1,16 +1,16 @@
-# Cline Hooks Documentation
+# HAI Hooks Documentation
 
 ## Overview
 
-Cline hooks allow you to execute custom scripts at specific points in the agentic workflow. Hooks can be placed in either:
-- **Global hooks directory**: `~/Documents/Cline/Hooks/` (applies to all workspaces)
-- **Workspace hooks directory**: `.clinerules/hooks/` (applies to the workspace the repo is part of)
+HAI hooks allow you to execute custom scripts at specific points in the agentic workflow. Hooks can be placed in either:
+- **Global hooks directory**: `~/Documents/HAI/Hooks/` (applies to all workspaces)
+- **Workspace hooks directory**: `.hairules/hooks/` (applies to the workspace the repo is part of)
 
 Hooks run automatically when enabled.
 
 ## Enabling Hooks
 
-1. Open Cline settings in VSCode
+1. Open HAI settings in VSCode
 2. Navigate to the Feature Settings section
 3. Check the "Enable Hooks" checkbox
 4. Hooks must be executable files (on Unix/Linux/macOS use `chmod +x hookname`)
@@ -20,55 +20,55 @@ Hooks run automatically when enabled.
 ### TaskStart Hook
 - **When**: Runs when a NEW task is started (not when resuming)
 - **Purpose**: Initialize task context, validate task requirements, set up environment
-- **Global Location**: `~/Documents/Cline/Hooks/TaskStart`
-- **Workspace Location**: `.clinerules/hooks/TaskStart`
+- **Global Location**: `~/Documents/HAI/Hooks/TaskStart`
+- **Workspace Location**: `.hairules/hooks/TaskStart`
 
 ### TaskResume Hook
 - **When**: Runs when an EXISTING task is resumed (after user clicks resume button)
 - **Purpose**: Validate resumed task state, restore context, check for changes since last run
-- **Global Location**: `~/Documents/Cline/Hooks/TaskResume`
-- **Workspace Location**: `.clinerules/hooks/TaskResume`
+- **Global Location**: `~/Documents/HAI/Hooks/TaskResume`
+- **Workspace Location**: `.hairules/hooks/TaskResume`
 
 ### TaskCancel Hook
 - **When**: Runs when a task is cancelled or a hook is aborted by the user (only if there's actual active work or work was started)
 - **Purpose**: Clean up resources, log cancellation, save state
-- **Global Location**: `~/Documents/Cline/Hooks/TaskCancel`
-- **Workspace Location**: `.clinerules/hooks/TaskCancel`
+- **Global Location**: `~/Documents/HAI/Hooks/TaskCancel`
+- **Workspace Location**: `.hairules/hooks/TaskCancel`
 - **Note**: This hook is NOT cancellable
 
 ### TaskComplete Hook (coming soon!)
 - **When**: Runs when a task is marked as complete
 - **Purpose**: Log completion status, perform final cleanup, generate reports
-- **Global Location**: `~/Documents/Cline/Hooks/TaskComplete`
-- **Workspace Location**: `.clinerules/hooks/TaskComplete`
+- **Global Location**: `~/Documents/HAI/Hooks/TaskComplete`
+- **Workspace Location**: `.hairules/hooks/TaskComplete`
 
 ### UserPromptSubmit Hook
 - **When**: Runs when the user submits a prompt/message (initial task, resume, or feedback)
 - **Purpose**: Validate user input, preprocess prompts, add context to user messages
-- **Global Location**: `~/Documents/Cline/Hooks/UserPromptSubmit`
-- **Workspace Location**: `.clinerules/hooks/UserPromptSubmit`
+- **Global Location**: `~/Documents/HAI/Hooks/UserPromptSubmit`
+- **Workspace Location**: `.hairules/hooks/UserPromptSubmit`
 
 ### PreToolUse Hook
 - **When**: Runs BEFORE a tool is executed
 - **Purpose**: Validate parameters, block execution, or add context
-- **Global Location**: `~/Documents/Cline/Hooks/PreToolUse`
-- **Workspace Location**: `.clinerules/hooks/PreToolUse`
+- **Global Location**: `~/Documents/HAI/Hooks/PreToolUse`
+- **Workspace Location**: `.hairules/hooks/PreToolUse`
 
 ### PostToolUse Hook
 - **When**: Runs AFTER a tool completes
 - **Purpose**: Observe results, track patterns, or add context
-- **Global Location**: `~/Documents/Cline/Hooks/PostToolUse`
-- **Workspace Location**: `.clinerules/hooks/PostToolUse`
+- **Global Location**: `~/Documents/HAI/Hooks/PostToolUse`
+- **Workspace Location**: `.hairules/hooks/PostToolUse`
 
 ### PreCompact Hook (coming soon!)
 - **When**: Runs BEFORE the conversation context is compacted/truncated
 - **Purpose**: Observe compaction events, log context management, track token usage
-- **Global Location**: `~/Documents/Cline/Hooks/PreCompact`
-- **Workspace Location**: `.clinerules/hooks/PreCompact`
+- **Global Location**: `~/Documents/HAI/Hooks/PreCompact`
+- **Workspace Location**: `.hairules/hooks/PreCompact`
 
 ## Cross-Platform Hook Format
 
-Cline uses a git-style approach for hooks that works consistently across all platforms:
+HAI uses a git-style approach for hooks that works consistently across all platforms:
 
 ### Hook Files (All Platforms)
 - **No file extensions**: Hooks are named exactly `PreToolUse` or `PostToolUse` (no `.bat`, `.cmd`, `.sh` etc.)
@@ -78,7 +78,7 @@ Cline uses a git-style approach for hooks that works consistently across all pla
 
 ### How It Works
 
-Like git hooks, Cline executes hook files through a shell that interprets the shebang line:
+Like git hooks, HAI executes hook files through a shell that interprets the shebang line:
 - On Unix/Linux/macOS: Native shell execution with shebang support
 
 This means:
@@ -91,10 +91,10 @@ This means:
 **On Unix/Linux/macOS:**
 ```bash
 # Create hook file
-nano ~/Documents/Cline/Hooks/PreToolUse
+nano ~/Documents/HAI/Hooks/PreToolUse
 
 # Make executable
-chmod +x ~/Documents/Cline/Hooks/PreToolUse
+chmod +x ~/Documents/HAI/Hooks/PreToolUse
 ```
 
 ## Context Injection Timing
@@ -136,7 +136,7 @@ When a hook runs:
 All hooks receive:
 ```json
 {
-  "clineVersion": "string",
+  "haiVersion": "string",
   "hookName": "TaskStart" | "TaskResume" | "TaskCancel" | "TaskComplete" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "PreCompact",
   "timestamp": "string",
   "taskId": "string",
@@ -289,7 +289,7 @@ fi
 input=$(cat)
 
 # Log to file
-echo "$input" >> ~/.cline/hook-logs/tool-usage.jsonl
+echo "$input" >> ~/.hai/hook-logs/tool-usage.jsonl
 
 # Allow execution
 echo '{"cancel": false}'
@@ -297,16 +297,16 @@ echo '{"cancel": false}'
 
 ## Global vs Workspace Hooks
 
-Cline supports two levels of hooks:
+HAI supports two levels of hooks:
 
 ### Global Hooks
-- **Location**: `~/Documents/Cline/Hooks/` (macOS/Linux)
+- **Location**: `~/Documents/HAI/Hooks/` (macOS/Linux)
 - **Scope**: Apply to ALL workspaces and projects
 - **Use Case**: Organization-wide policies, personal preferences, universal validations
 - **Priority**: Order not guaranteed when combined with workspace hooks
 
 ### Workspace Hooks
-- **Location**: `.clinerules/hooks/` in each workspace root
+- **Location**: `.hairules/hooks/` in each workspace root
 - **Scope**: Apply only to the specific workspace
 - **Use Case**: Project-specific rules, team conventions, repository requirements
 - **Priority**: Order not guaranteed when combined with global hooks
@@ -327,23 +327,23 @@ When multiple hooks exist (global and/or workspace):
 ### Setting Up Global Hooks
 
 1. The global hooks directory is automatically created at:
-   - macOS/Linux: `~/Documents/Cline/Hooks/`
+   - macOS/Linux: `~/Documents/HAI/Hooks/`
 
 2. Add your hook script:
    ```bash
    # Unix/Linux/macOS
-   nano ~/Documents/Cline/Hooks/PreToolUse
-   chmod +x ~/Documents/Cline/Hooks/PreToolUse
+   nano ~/Documents/HAI/Hooks/PreToolUse
+   chmod +x ~/Documents/HAI/Hooks/PreToolUse
    ```
 
-3. Enable hooks in Cline settings
+3. Enable hooks in HAI settings
 
 ### Example: Global + Workspace Hooks
 
 **Global Hook** (applies to all projects):
 ```bash
 #!/usr/bin/env bash
-# ~/Documents/Cline/Hooks/PreToolUse
+# ~/Documents/HAI/Hooks/PreToolUse
 # Universal rule: Never delete package.json
 input=$(cat)
 tool_name=$(echo "$input" | jq -r '.preToolUse.toolName')
@@ -360,7 +360,7 @@ echo '{"cancel": false}'
 **Workspace Hook** (applies to specific project):
 ```bash
 #!/usr/bin/env bash
-# .clinerules/hooks/PreToolUse
+# .hairules/hooks/PreToolUse
 # Project rule: Only TypeScript files
 input=$(cat)
 tool_name=$(echo "$input" | jq -r '.preToolUse.toolName')
@@ -378,7 +378,7 @@ echo '{"cancel": false}'
 
 ## Multi-Root Workspaces
 
-If you have multiple workspace roots, you can place hooks in each root's `.clinerules/hooks/` directory. All hooks (global and workspace) may execute concurrently. Their results will be combined:
+If you have multiple workspace roots, you can place hooks in each root's `.hairules/hooks/` directory. All hooks (global and workspace) may execute concurrently. Their results will be combined:
 
 - **cancel**: If ANY hook returns `true`, execution is blocked
 - **contextModification**: All context modifications are concatenated
@@ -392,7 +392,7 @@ If you have multiple workspace roots, you can place hooks in each root's `.cline
 - Ensure the "Enable Hooks" setting is checked
 - Verify the hook file is executable (`chmod +x hookname`)
 - Check the hook file has no syntax errors
-- Look for errors in VSCode's Output panel (Cline channel)
+- Look for errors in VSCode's Output panel (HAI channel)
 
 ### Hook Timing Out
 - Reduce complexity of the hook script
