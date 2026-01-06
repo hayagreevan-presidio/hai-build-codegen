@@ -4,12 +4,8 @@ import { anthropicModels, bedrockModels, geminiModels, type ModelInfo, vertexMod
 import { getGitUserInfo } from "@/utils/git"
 import type { ITelemetryProvider, TelemetryProperties, TelemetrySettings } from "./ITelemetryProvider"
 
-/**
- * Langfuse telemetry provider implementation
- * Handles sending telemetry events to Langfuse
- */
 export class LangfuseProvider implements ITelemetryProvider {
-	private langfuse: Langfuse
+	private langfuse?: Langfuse
 	private traceClient?: LangfuseTraceClient
 	private enabled: boolean = false
 	private userId?: string
@@ -21,34 +17,37 @@ export class LangfuseProvider implements ITelemetryProvider {
 		private baseUrl?: string,
 		distinctId?: string,
 	) {
-		// Always ensure we have a session ID
 		this.distinctId = distinctId || `${Date.now()}-${Math.random().toString(36).substring(2)}`
-		this.langfuse = new Langfuse({
-			secretKey: apiKey,
-			publicKey,
-			baseUrl,
-			requestTimeout: 10000,
-			enabled: true,
-		})
-		// Create a root trace for task events
-		const rootTraceId = `root-${Date.now()}`
-		this.traceClient = this.langfuse.trace({
-			id: rootTraceId,
-			name: "hai-build-code-generator",
-			timestamp: new Date(),
-			userId: this.gitUserInfo.username,
-			sessionId: this.distinctId,
-			metadata: {
-				user: this.gitUserInfo.username,
-				email: this.gitUserInfo.email,
-			},
-		} as any) // Temporary type assertion until we fix the types
 		this.enabled = true
-		console.info(`[LangfuseProvider] Initialized with trace ${rootTraceId}`)
+	}
+
+	private getClient(): LangfuseTraceClient | undefined {
+		if (!this.enabled) return undefined
+		if (!this.langfuse) {
+			this.langfuse = new Langfuse({
+				secretKey: this.apiKey,
+				publicKey: this.publicKey,
+				baseUrl: this.baseUrl,
+				enabled: true,
+			})
+		}
+		if (!this.traceClient) {
+			this.traceClient = this.langfuse.trace({
+				id: `root-${Date.now()}`,
+				name: "hai-build-code-generator",
+				userId: this.gitUserInfo.username,
+				sessionId: this.distinctId,
+				metadata: {
+					user: this.gitUserInfo.username,
+					email: this.gitUserInfo.email,
+				},
+			} as any)
+		}
+		return this.traceClient
 	}
 
 	public log(event: string, properties?: TelemetryProperties): void {
-		if (!this.enabled || event !== "task.conversation_turn" || !properties) return
+		if (!this.enabled || !properties || event !== "task.conversation_turn") return
 
 		try {
 			const { cacheWriteTokens, cacheReadTokens, totalCost, model, provider } = properties
@@ -76,7 +75,7 @@ export class LangfuseProvider implements ITelemetryProvider {
 						modelConfig = undefined
 				}
 
-				this.traceClient?.generation({
+				this.getClient()?.generation({
 					name: event,
 					model: modelId,
 					userId: this.gitUserInfo.username,
@@ -108,7 +107,7 @@ export class LangfuseProvider implements ITelemetryProvider {
 						cacheWritesPrice: modelConfig?.cacheWritesPrice || 1.0,
 						cacheReadsPrice: modelConfig?.cacheReadsPrice || 0.08,
 					},
-				} as any) // Temporary type assertion until we fix the types
+				} as any)
 			}
 		} catch (error) {
 			console.error("[LangfuseProvider] Failed to log event:", error)
@@ -119,7 +118,7 @@ export class LangfuseProvider implements ITelemetryProvider {
 		if (!this.enabled || event !== "task.conversation_turn" || !properties) return
 
 		try {
-			this.traceClient?.event({
+			this.getClient()?.event({
 				name: event,
 				userId: this.gitUserInfo.username,
 				sessionId: this.distinctId,
@@ -128,28 +127,15 @@ export class LangfuseProvider implements ITelemetryProvider {
 					email: this.gitUserInfo.email,
 					user: this.gitUserInfo.username,
 				},
-			} as any) // Temporary type assertion until we fix the types
+			} as any)
 		} catch (error) {
 			console.error("[LangfuseProvider] Failed to log required event:", error)
 		}
 	}
 
 	public identifyUser(userInfo?: ClineAccountUserInfo, properties?: TelemetryProperties): void {
-		if (!this.enabled || !this.traceClient) return
-
-		try {
-			this.traceClient.update({
-				userId: this.gitUserInfo.username,
-				sessionId: this.distinctId,
-				metadata: {
-					...properties,
-					email: this.gitUserInfo.email,
-					displayName: this.gitUserInfo.username,
-				},
-			} as any) // Temporary type assertion until we fix the types
-		} catch (error) {
-			console.error("[LangfuseProvider] Failed to identify user:", error)
-		}
+		// Disable all identify calls as we only want task.conversation_turn events
+		return
 	}
 
 	public setOptIn(optIn: boolean): void {
@@ -179,10 +165,10 @@ export class LangfuseProvider implements ITelemetryProvider {
 		description?: string,
 		required?: boolean,
 	): void {
-		if (!this.enabled && !required) return
+		if (!this.enabled || name !== "task.conversation_turn") return
 
 		try {
-			this.traceClient?.score({
+			this.getClient()?.score({
 				name,
 				value,
 				userId: this.gitUserInfo.username,
@@ -205,10 +191,10 @@ export class LangfuseProvider implements ITelemetryProvider {
 		description?: string,
 		required?: boolean,
 	): void {
-		if (!this.enabled && !required) return
+		if (!this.enabled || name !== "task.conversation_turn") return
 
 		try {
-			this.traceClient?.score({
+			this.getClient()?.score({
 				name,
 				value,
 				userId: this.gitUserInfo.username,
@@ -232,11 +218,11 @@ export class LangfuseProvider implements ITelemetryProvider {
 		description?: string,
 		required?: boolean,
 	): void {
-		if (!this.enabled && !required) return
+		if (!this.enabled || name !== "task.conversation_turn") return
 		if (value === null) return
 
 		try {
-			this.traceClient?.score({
+			this.getClient()?.score({
 				name,
 				value,
 				userId: this.gitUserInfo.username,
@@ -254,10 +240,12 @@ export class LangfuseProvider implements ITelemetryProvider {
 	}
 
 	public setTraceClient(taskId: string, isNew: boolean = false) {
-		if (!this.enabled || !taskId) return
+		// Only set trace client for task.conversation_turn events
+		if (!this.enabled || !taskId || !taskId.includes("task.conversation_turn")) return
 
 		try {
 			// Start / Re-Create a new trace in Langfuse
+			if (!this.langfuse) return
 			this.traceClient = this.langfuse.trace({
 				id: taskId,
 				name: "hai-build-code-generator",
@@ -277,38 +265,16 @@ export class LangfuseProvider implements ITelemetryProvider {
 	}
 
 	public setDistinctId(distinctId: string) {
-		const oldDistinctId = this.distinctId
 		this.distinctId = distinctId
-		// Update the current trace with the new session ID
-		if (this.traceClient && oldDistinctId !== distinctId) {
-			// Create a new trace to ensure proper session tracking
-			const rootTraceId = `root-${Date.now()}-${Math.random().toString(36).substring(2)}`
-			this.traceClient = this.langfuse.trace({
-				id: rootTraceId,
-				name: "hai-build-code-generator",
-				timestamp: new Date(),
-				userId: this.gitUserInfo.username,
-				sessionId: this.distinctId,
-				metadata: {
-					user: this.gitUserInfo.username,
-					email: this.gitUserInfo.email,
-					type: "root",
-				},
-			} as any)
-			console.info(`[LangfuseProvider] Created new trace with updated session ID ${rootTraceId}`)
-		}
 	}
 
 	public async dispose(): Promise<void> {
-		if (!this.enabled) return
+		if (!this.enabled || !this.langfuse) return
 
 		try {
-			if (this.traceClient) {
-				// Only flush if we have active traces
-				await this.langfuse.flushAsync()
-				await this.langfuse.shutdownAsync()
-				console.info("[LangfuseProvider] Disposed and flushed all events")
-			}
+			await this.langfuse.flushAsync()
+			await this.langfuse.shutdownAsync()
+			console.info("[LangfuseProvider] Disposed and flushed all events")
 		} catch (error) {
 			console.error("[LangfuseProvider] Error during dispose:", error)
 		}
