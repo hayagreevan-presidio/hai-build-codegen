@@ -123,14 +123,14 @@ export class TelemetryProviderFactory {
 				publicKey: customLangfuseConfig.publicKey,
 				apiUrl: customLangfuseConfig.apiUrl,
 			})
-		} else if (process.env.LANGFUSE_API_KEY && process.env.LANGFUSE_PUBLIC_KEY) {
+		} else if (process.env.LANGFUSE_SECRET_KEY && process.env.LANGFUSE_PUBLIC_KEY) {
 			// Fall back to pipeline defaults (build-time env vars)
 			Logger.info("TelemetryProviderFactory: Using default Langfuse config from pipeline")
 			configs.push({
 				type: "langfuse",
-				apiKey: process.env.LANGFUSE_API_KEY,
+				apiKey: process.env.LANGFUSE_SECRET_KEY,
 				publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-				apiUrl: process.env.LANGFUSE_API_URL,
+				apiUrl: process.env.LANGFUSE_BASE_URL,
 			})
 		}
 
