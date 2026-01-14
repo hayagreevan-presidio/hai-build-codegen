@@ -10,7 +10,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      workflows: write
 
     steps:
       - name: Checkout Fork
@@ -59,6 +58,14 @@ jobs:
           # Merge upstream into the sync branch
           echo "New commits detected. Merging..."
           git merge upstream/main --no-edit
+
+          # Excluding Workflow changes
+          rm -rf .github/workflows
+
+          if [[ `git status --porcelain` ]]; then
+            git add .
+            git commit -m "Sync upstream (exclude workflows)"
+          fi
           
           # Push the branch (use force-with-lease to update existing PR branch safely)
           git push origin upstream-main
